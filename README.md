@@ -22,4 +22,4 @@ Run the app.py next
 
 # How to Use From Phone
 Now it is ready to accessed from your phone or any other device! The link to access is printed when you run app.py or you can access it from:
-http://<your-ip>:5000/shutdown?password=<your-password>&key=<your-secret-key>
+http://<your-ip>:5000/shutdown?password=(encryptedpass)&key=(encryptedkey)
