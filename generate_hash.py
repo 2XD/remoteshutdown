@@ -2,19 +2,11 @@ import hashlib
 import secrets
 import socket
 
-# Get the user's IP address
-def get_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.settimeout(0)
-    try:
-        # Try connecting to an address (Google DNS server)
-        s.connect(('8.8.8.8', 1))
-        ip = s.getsockname()[0]
-    except Exception:
-        ip = '127.0.0.1'  # Default to localhost if no network connection is available
-    finally:
-        s.close()
-    return ip
+# Get the user's local IP address
+def get_local_ip():
+    hostname = socket.gethostname()
+    local_ip = socket.gethostbyname(hostname)
+    return local_ip
 
 # Ask user for a password
 password = input("Enter a secure password (any length): ")
@@ -32,8 +24,8 @@ with open(".env", "w") as env_file:
     env_file.write(f"HASHED_PASSWORD={hashed_password}\n")
     env_file.write(f"SECRET_KEY={secret_key}\n")
 
-# Get the user's IP address
-ip_address = get_ip()
+# Get the user's local IP address
+ip_address = get_local_ip()
 
 # Display the shutdown link
 shutdown_link = f"http://{ip_address}:5000/shutdown?password={hashed_password}&key={secret_key}"
