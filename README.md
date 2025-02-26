@@ -1,4 +1,4 @@
-# Secure Flask Remote Shutdown
+# Lightweight Remote Shutdown using Flask
 
 A secure API to remotely shut down your PC using Flask, featuring brute-force protection, password hashing, and more.
 
