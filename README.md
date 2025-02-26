@@ -37,4 +37,4 @@ The bot is designed to use port 5000, as this port is openable on most devices. 
 # How to Use From Phone
 
 Now it is ready to be accessed from your phone or any other device! The link to access is printed when you run `app.py` or you can access it from:
-http://<your-ip>:5000/shutdown?password=(encryptedpass)&key=(encryptedkey)
+http://(your-ip):5000/shutdown?password=(encryptedpass)&key=(encryptedkey)
