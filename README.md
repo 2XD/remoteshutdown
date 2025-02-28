@@ -1,40 +1,54 @@
-# Lightweight Remote Shutdown using Flask
+# Lightweight Remote Shutdown using Flask and NGROK
 
 A secure API to remotely shut down your PC using Flask, featuring brute-force protection, password hashing, and more.
 
-# Setup Script
+## Setup Instructions
 
-1. Install dependencies:
+### 1. Install Dependencies
+Make sure you have Python installed, then install the required dependencies:
+```sh
+pip install -r requirements.txt
+```
 
-2. Generate your hashed password and secret key by opening `generate_hash.py`. You can do this every time you use it or just once, totally up to you.  
-This is saved as the `.env` file.
+### 2. Generate Your Hashed Password and Secret Key
+Run the `generate_hash.py` script to create a hashed password and secret key, which will be saved in the `.env` file.
+```sh
+python generate_hash.py
+```
+You can generate a new key each time you use it or just once, depending on your preference.
 
-# Setup Port to Access
+## Setting Up NGROK
 
-The bot is designed to use port 5000, as this port is openable on most devices. However, feel free to change the port if needed.
+### 1. Download and Install NGROK
+Go to [NGROK's official website](https://ngrok.com/) and sign up for an account.
 
-### Steps to Allow Python Through the Firewall:
+### 2. Get Your Authentication Key
+After signing up, go to your NGROK dashboard and find your authentication token.
 
-1. **Go to Security Settings**:
-- Make sure you allow Python to communicate through both the public and private firewall.
+### 3. Set Up NGROK in Command Line
+Run the following command in your terminal or command prompt, replacing `YOUR_AUTH_TOKEN` with your actual token:
+```sh
+ngrok authtoken YOUR_AUTH_TOKEN
+```
 
-2. **Run Windows Firewall Settings**:
-- Press `Windows + R`, type `wf.msc`, and hit Enter to open Windows Firewall settings.
+### 4. Start NGROK Tunnel
+Run NGROK to expose your Flask app to the internet:
+```sh
+ngrok http 5000
+```
+Copy the public URL provided by NGROK, as you'll use this to access the remote shutdown page.
 
-3. **Create a New Inbound Rule**:
-- Go to **Inbound Rules** and click on **New Rule**.
+## Running the Server
+Once NGROK is set up, start the Flask server:
+```sh
+python app.py
+```
+The public NGROK URL will be printed in the terminal. Use it to access your shutdown page.
 
-4. **Configure Rule Type**:
-- **Rule Type**: Select **Port**.
-- **Protocols and Ports**: Choose **TCP** and enter the port you wish to use (make sure to update the port in `app.py` if you're not using port 5000).
-- **Action**: Select **Allow the connection**.
-- **Profile**: Choose **Private and Public**.
-- **Name**: Enter a name for the rule (you can name it anything you like).
+## How to Use From Phone
+Now the server is accessible from your phone or any other device. The URL will be printed in the terminal upon running `app.py`, or you can access it directly using:
+```
+https://your-ngrok-url/shutdown?token=YOUR_GENERATED_JWT_TOKEN
+```
+Ensure you keep your token secure, as it is required for authentication.
 
-5. **Run the `app.py`**:
-- After creating the rule, run the `app.py` script to start the server.
-
-# How to Use From Phone
-
-Now it is ready to be accessed from your phone or any other device! The link to access is printed when you run `app.py` or you can access it from:
-http://(your-ip):5000/shutdown?password=(encryptedpass)&key=(encryptedkey)
