@@ -1,48 +1,91 @@
 import os
-import socket
-import psutil
-from flask import Flask, request, jsonify
+import jwt
+from flask import Flask, request, jsonify, render_template_string
 from dotenv import load_dotenv
+from pyngrok import ngrok
 
-# Load environment and hashed secrets
+# Load environment variables from .env
 load_dotenv()
+
+# Set up Flask app
 app = Flask(__name__)
-secret_key = os.getenv('SECRET_KEY')
-hashed_password = os.getenv('HASHED_PASSWORD')
 
+# Use the SECRET_KEY from the .env file
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-# Define the shutdown function
+# Generate a simple JWT Token
+def generate_token():
+    token = jwt.encode({}, SECRET_KEY, algorithm='HS256')
+    return token
+
+# Generate the token when the app starts
+jwt_token = generate_token()
+
+# Define a shutdown function to actually shut down the PC
 def shutdown():
-    if psutil.WINDOWS:
-        os.system("shutdown /s /f /t 1")
-    else:
-        os.system("shutdown now")
+    print("Shutdown started!")  # This will print when the button is clicked
+    os.system('shutdown /s /f /t 0')  # Windows command to shut down the PC
 
-
-# Get the local IP address dynamically
-def get_local_ip():
-    hostname = socket.gethostname()
-    local_ip = socket.gethostbyname(hostname)
-    return local_ip
-
-
-# Route for shutdown
+# Route for shutdown (JWT-protected)
 @app.route('/shutdown', methods=['GET'])
 def remote_shutdown():
-    password = request.args.get('password')
-    key = request.args.get('key')
-    
-    # Verify the password and key
-    if password == hashed_password and key == secret_key:
-        shutdown()
-        return jsonify({"message": "Shutdown started!"}), 200
-    else:
-        return jsonify({"ERROR": "Either the password or key is wrong."}), 403
+    # Get token from URL
+    token = request.args.get('token')
 
+    if not token:
+        return jsonify({"ERROR": "Missing token."}), 403
+
+    try:
+        # Decode and validate the token
+        jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        shutdown()  # Call shutdown function
+        return jsonify({"message": "Shutdown started!"}), 200
+    except jwt.InvalidTokenError:
+        return jsonify({"ERROR": "Invalid token."}), 403
+
+# Route for home page with Shutdown button
+@app.route('/')
+def index():
+    # Get token from URL query string
+    token = request.args.get('token')
+
+    # If the token is valid, enable the button, else disable it
+    button_state = "enabled" if token else "disabled"
+    
+    # Embed HTML content with a shutdown button and the token in the URL
+    html_content = f"""
+    <html>
+        <head>
+            <title>Remote Shutdown</title>
+        </head>
+        <body>
+            <h1>Remote Shutdown</h1>
+            
+            <form action="/shutdown" method="GET" id="shutdownForm">
+                <input type="hidden" name="token" value="{token}"/>
+                <button type="submit" id="shutdownBtn" {button_state}>Shutdown</button>
+            </form>
+
+            <script>
+                // If token is missing or invalid, disable the button
+                var token = "{token}";
+                if (!token) {{
+                    document.getElementById('shutdownBtn').disabled = true;
+                    alert("Invalid or missing token! Button disabled.");
+                }}
+            </script>
+        </body>
+    </html>
+    """
+    return render_template_string(html_content)
 
 # Start the app
 if __name__ == '__main__':
-    local_ip = get_local_ip()  # Get local IP address
-    print(f"Running the server on http://{local_ip}:5000/")
-    print(f"To remote shutdown from your phone or another device, go to: http://{local_ip}:5000/shutdown?password={hashed_password}&key={secret_key}")
+    # Start Ngrok and get the public URL
+    ngrok_tunnel = ngrok.connect(5000)
+    public_url = ngrok_tunnel.public_url
+    
+    print("\nRemote Shutdown Server is Running!\n")
+    print(f"Public Access: {public_url}/?token={jwt_token}\n")
+    
     app.run(host='0.0.0.0', port=5000)
