@@ -30,14 +30,6 @@ Run the following command in your terminal or command prompt, replacing `YOUR_AU
 ```sh
 ngrok authtoken YOUR_AUTH_TOKEN
 ```
-
-### 4. Start NGROK Tunnel
-Run NGROK to expose your Flask app to the internet:
-```sh
-ngrok http 5000
-```
-Copy the public URL provided by NGROK, as you'll use this to access the remote shutdown page.
-
 ## Running the Server
 Once NGROK is set up, start the Flask server:
 ```sh
